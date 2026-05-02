@@ -1,10 +1,17 @@
 package com.example.msultanchaniago_2457051003_projectedukasikesehatan.model
 
-import androidx.annotation.DrawableRes
+import com.google.gson.annotations.SerializedName
 
 data class Health(
+    @SerializedName("title")
     val title: String,
+
+    @SerializedName("description")
     val description: String,
+
+    @SerializedName("benefit")
     val benefit: String,
-    @DrawableRes val imageRes: Int
+
+    @SerializedName("image_url")
+    val imageUrl: String
 )
