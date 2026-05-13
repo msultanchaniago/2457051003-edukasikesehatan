@@ -3,20 +3,16 @@ package com.example.msultanchaniago_2457051003_projectedukasikesehatan
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
-
 import androidx.compose.material3.*
-
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,13 +20,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-
 import coil.compose.AsyncImage
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-import com.example.msultanchaniago_2457051003_projectedukasikesehatan.model.Health
-import com.example.msultanchaniago_2457051003_projectedukasikesehatan.network.RetrofitClient
+import com.example.msultanchaniago_2457051003_projectedukasikesehatan.data.model.health
+import com.example.msultanchaniago_2457051003_projectedukasikesehatan.data.repository.HealthRepository
 import com.example.msultanchaniago_2457051003_projectedukasikesehatan.ui.theme.ProjectEdukasiKesehatanTheme
 
 class MainActivity : ComponentActivity() {
@@ -47,14 +42,14 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun DaftarHealthScreen() {
-
-    var healthList by remember { mutableStateOf<List<Health>>(emptyList()) }
+    var healthList by remember { mutableStateOf<List<health>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var isError by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         try {
-            healthList = RetrofitClient.instance.getHealth()
+            val repository = HealthRepository()
+            healthList = repository.getHealth()
         } catch (e: Exception) {
             e.printStackTrace()
             isError = true
@@ -64,13 +59,19 @@ fun DaftarHealthScreen() {
 
     when {
         isLoading -> {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator()
             }
         }
 
         isError -> {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 Text("Gagal memuat data")
             }
         }
@@ -83,7 +84,7 @@ fun DaftarHealthScreen() {
                 contentPadding = PaddingValues(16.dp)
             ) {
 
-                // 🔥 HEADER 1
+                // Header 1
                 item {
                     Text(
                         text = "Rekomendasi Populer",
@@ -93,7 +94,7 @@ fun DaftarHealthScreen() {
                     )
                 }
 
-                // 🔥 LAZY ROW
+                // Horizontal list
                 item {
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -104,7 +105,7 @@ fun DaftarHealthScreen() {
                     }
                 }
 
-                // 🔥 HEADER 2
+                // Header 2
                 item {
                     Spacer(modifier = Modifier.height(24.dp))
 
@@ -116,7 +117,7 @@ fun DaftarHealthScreen() {
                     )
                 }
 
-                // 🔥 LIST VERTICAL
+                // Vertical list
                 items(healthList) { item ->
                     DetailHealthScreen(item)
                     Spacer(modifier = Modifier.height(16.dp))
@@ -127,32 +128,32 @@ fun DaftarHealthScreen() {
 }
 
 @Composable
-fun HealthRowItem(health: Health) {
-
+fun HealthRowItem(item: health) {
     Card(
         modifier = Modifier.width(160.dp),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column {
-
             AsyncImage(
-                model = health.imageUrl,
-                contentDescription = health.title,
+                model = item.imageUrl,
+                contentDescription = item.title,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.dp),
                 contentScale = ContentScale.Crop
             )
 
-            Column(modifier = Modifier.padding(8.dp)) {
+            Column(
+                modifier = Modifier.padding(8.dp)
+            ) {
                 Text(
-                    text = health.title,
+                    text = item.title,
                     fontWeight = FontWeight.Bold
                 )
 
                 Text(
-                    text = health.benefit,
+                    text = item.benefit,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -162,29 +163,28 @@ fun HealthRowItem(health: Health) {
 }
 
 @Composable
-fun DetailHealthScreen(health: Health) {
-
+fun DetailHealthScreen(item: health) {
     var isFavorite by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
 
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    Box(modifier = Modifier.fillMaxWidth()) {
-
+    Box(
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(6.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
         ) {
-
-            Column(modifier = Modifier.padding(12.dp)) {
-
+            Column(
+                modifier = Modifier.padding(12.dp)
+            ) {
                 Box {
-
                     AsyncImage(
-                        model = health.imageUrl,
-                        contentDescription = health.title,
+                        model = item.imageUrl,
+                        contentDescription = item.title,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(200.dp),
@@ -198,8 +198,10 @@ fun DetailHealthScreen(health: Health) {
                             .padding(8.dp)
                     ) {
                         Icon(
-                            imageVector = if (isFavorite) Icons.Filled.Favorite
-                            else Icons.Outlined.FavoriteBorder,
+                            imageVector = if (isFavorite)
+                                Icons.Filled.Favorite
+                            else
+                                Icons.Outlined.FavoriteBorder,
                             contentDescription = "Favorite",
                             tint = if (isFavorite) Color.Red else Color.White
                         )
@@ -209,17 +211,21 @@ fun DetailHealthScreen(health: Health) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = health.title,
+                    text = item.title,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text(text = health.description)
+                Text(text = item.description)
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Text(text = "Manfaat: ${health.benefit}")
+                Text(
+                    text = "Manfaat: ${item.benefit}",
+                    fontWeight = FontWeight.Medium
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -230,7 +236,7 @@ fun DetailHealthScreen(health: Health) {
                             delay(2000)
 
                             snackbarHostState.showSnackbar(
-                                "Materi ${health.title} berhasil dipelajari!"
+                                "Materi ${item.title} berhasil dipelajari!"
                             )
 
                             isLoading = false
@@ -259,4 +265,3 @@ fun DetailHealthScreen(health: Health) {
         )
     }
 }
-

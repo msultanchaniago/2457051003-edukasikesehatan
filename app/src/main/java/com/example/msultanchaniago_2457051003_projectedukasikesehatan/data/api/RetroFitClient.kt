@@ -1,4 +1,4 @@
-package com.example.msultanchaniago_2457051003_projectedukasikesehatan.network
+package com.example.msultanchaniago_2457051003_projectedukasikesehatan.data.api
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

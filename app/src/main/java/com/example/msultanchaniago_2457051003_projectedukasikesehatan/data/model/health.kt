@@ -1,8 +1,8 @@
-package com.example.msultanchaniago_2457051003_projectedukasikesehatan.model
+package com.example.msultanchaniago_2457051003_projectedukasikesehatan.data.model
 
 import com.google.gson.annotations.SerializedName
 
-data class Health(
+data class health(
     @SerializedName("title")
     val title: String,
 
