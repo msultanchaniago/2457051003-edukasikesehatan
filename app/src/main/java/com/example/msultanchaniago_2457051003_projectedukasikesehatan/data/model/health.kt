@@ -1,17 +1,9 @@
-package com.example.msultanchaniago_2457051003_projectedukasikesehatan.data.model
+package com.example.msultanchaniago_2457051003_projectedukasikesehatan.model
 
-import com.google.gson.annotations.SerializedName
-
-data class health(
-    @SerializedName("title")
+data class Health(
     val title: String,
-
-    @SerializedName("description")
     val description: String,
-
-    @SerializedName("benefit")
     val benefit: String,
-
-    @SerializedName("image_url")
-    val imageUrl: String
+    val category: String,
+    val image: String
 )

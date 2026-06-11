@@ -1,11 +1,11 @@
-package com.example.msultanchaniago_2457051003_projectedukasikesehatan.data.repository
+package com.example.msultanchaniago_2457051003_projectedukasikesehatan.repository
 
-import com.example.msultanchaniago_2457051003_projectedukasikesehatan.data.api.RetrofitClient
-import com.example.msultanchaniago_2457051003_projectedukasikesehatan.data.model.health
+import com.example.msultanchaniago_2457051003_projectedukasikesehatan.data.api.RetroFitClient
+import com.example.msultanchaniago_2457051003_projectedukasikesehatan.model.Health
 
-class HealthRepository {
+object HealthRepository {
 
-    suspend fun getHealth(): List<health> {
-        return RetrofitClient.instance.getHealth()
+    suspend fun getHealthList(): List<Health> {
+        return RetroFitClient.apiService.getHealthData()
     }
 }

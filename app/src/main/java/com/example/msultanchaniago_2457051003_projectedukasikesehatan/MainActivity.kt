@@ -3,265 +3,120 @@ package com.example.msultanchaniago_2457051003_projectedukasikesehatan
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-
-import com.example.msultanchaniago_2457051003_projectedukasikesehatan.data.model.health
-import com.example.msultanchaniago_2457051003_projectedukasikesehatan.data.repository.HealthRepository
-import com.example.msultanchaniago_2457051003_projectedukasikesehatan.ui.theme.ProjectEdukasiKesehatanTheme
+import com.example.msultanchaniago_2457051003_projectedukasikesehatan.model.Health
+import com.example.msultanchaniago_2457051003_projectedukasikesehatan.navigation.AppScreen
+import com.example.msultanchaniago_2457051003_projectedukasikesehatan.ui.component.BottomMenu
+import com.example.msultanchaniago_2457051003_projectedukasikesehatan.ui.screen.AboutScreen
+import com.example.msultanchaniago_2457051003_projectedukasikesehatan.ui.screen.DashboardScreen
+import com.example.msultanchaniago_2457051003_projectedukasikesehatan.ui.screen.DetailScreen
+import com.example.msultanchaniago_2457051003_projectedukasikesehatan.ui.screen.EducationScreen
+import com.example.msultanchaniago_2457051003_projectedukasikesehatan.ui.screen.LoginScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            ProjectEdukasiKesehatanTheme {
-                DaftarHealthScreen()
-            }
+            EduCareApp()
         }
     }
 }
 
 @Composable
-fun DaftarHealthScreen() {
-    var healthList by remember { mutableStateOf<List<health>>(emptyList()) }
-    var isLoading by remember { mutableStateOf(true) }
-    var isError by remember { mutableStateOf(false) }
+fun EduCareApp() {
+    var isLoggedIn by remember { mutableStateOf(false) }
+    var userName by remember { mutableStateOf("") }
+    var selectedScreen by remember { mutableStateOf(AppScreen.DASHBOARD) }
+    var selectedHealth by remember { mutableStateOf<Health?>(null) }
 
-    LaunchedEffect(Unit) {
-        try {
-            val repository = HealthRepository()
-            healthList = repository.getHealth()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            isError = true
-        }
-        isLoading = false
-    }
-
-    when {
-        isLoading -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
+    if (!isLoggedIn) {
+        LoginScreen(
+            onLoginSuccess = { name ->
+                userName = name
+                isLoggedIn = true
+                selectedScreen = AppScreen.DASHBOARD
+                selectedHealth = null
             }
-        }
-
-        isError -> {
+        )
+    } else {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
             Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Gagal memuat data")
-            }
-        }
-
-        else -> {
-            LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background),
-                contentPadding = PaddingValues(16.dp)
+                    .padding(bottom = if (selectedHealth == null) 82.dp else 0.dp)
             ) {
-
-                // Header 1
-                item {
-                    Text(
-                        text = "Rekomendasi Populer",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-                }
-
-                // Horizontal list
-                item {
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(healthList) { item ->
-                            HealthRowItem(item)
+                if (selectedHealth != null) {
+                    DetailScreen(
+                        health = selectedHealth!!,
+                        onBack = {
+                            selectedHealth = null
                         }
-                    }
-                }
-
-                // Header 2
-                item {
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Text(
-                        text = "Daftar Menu Lengkap",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(bottom = 12.dp)
                     )
-                }
-
-                // Vertical list
-                items(healthList) { item ->
-                    DetailHealthScreen(item)
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun HealthRowItem(item: health) {
-    Card(
-        modifier = Modifier.width(160.dp),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column {
-            AsyncImage(
-                model = item.imageUrl,
-                contentDescription = item.title,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp),
-                contentScale = ContentScale.Crop
-            )
-
-            Column(
-                modifier = Modifier.padding(8.dp)
-            ) {
-                Text(
-                    text = item.title,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Text(
-                    text = item.benefit,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun DetailHealthScreen(item: health) {
-    var isFavorite by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
-
-    val coroutineScope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    Box(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
-            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
-        ) {
-            Column(
-                modifier = Modifier.padding(12.dp)
-            ) {
-                Box {
-                    AsyncImage(
-                        model = item.imageUrl,
-                        contentDescription = item.title,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        contentScale = ContentScale.Crop
-                    )
-
-                    IconButton(
-                        onClick = { isFavorite = !isFavorite },
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (isFavorite)
-                                Icons.Filled.Favorite
-                            else
-                                Icons.Outlined.FavoriteBorder,
-                            contentDescription = "Favorite",
-                            tint = if (isFavorite) Color.Red else Color.White
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = item.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(text = item.description)
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = "Manfaat: ${item.benefit}",
-                    fontWeight = FontWeight.Medium
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {
-                        coroutineScope.launch {
-                            isLoading = true
-                            delay(2000)
-
-                            snackbarHostState.showSnackbar(
-                                "Materi ${item.title} berhasil dipelajari!"
+                } else {
+                    when (selectedScreen) {
+                        AppScreen.DASHBOARD -> {
+                            DashboardScreen(
+                                userName = userName,
+                                onOpenEducation = {
+                                    selectedScreen = AppScreen.EDUKASI
+                                },
+                                onLogout = {
+                                    isLoggedIn = false
+                                    userName = ""
+                                    selectedScreen = AppScreen.DASHBOARD
+                                    selectedHealth = null
+                                }
                             )
-
-                            isLoading = false
                         }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !isLoading
-                ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            strokeWidth = 2.dp
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Memproses...")
-                    } else {
-                        Text("Pelajari Sekarang")
+
+                        AppScreen.EDUKASI -> {
+                            EducationScreen(
+                                onItemClick = { health ->
+                                    selectedHealth = health
+                                }
+                            )
+                        }
+
+                        AppScreen.TENTANG -> {
+                            AboutScreen(
+                                onLogout = {
+                                    isLoggedIn = false
+                                    userName = ""
+                                    selectedScreen = AppScreen.DASHBOARD
+                                    selectedHealth = null
+                                }
+                            )
+                        }
                     }
                 }
             }
-        }
 
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
+            if (selectedHealth == null) {
+                Box(
+                    modifier = Modifier.align(Alignment.BottomCenter)
+                ) {
+                    BottomMenu(
+                        selectedScreen = selectedScreen,
+                        onMenuClick = { screen ->
+                            selectedScreen = screen
+                            selectedHealth = null
+                        }
+                    )
+                }
+            }
+        }
     }
 }
